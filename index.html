@@ -79,7 +79,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 
 <dialog id="dlg"><h2 id="dt">Novo lançamento</h2>
 <div class="seg" id="tipo"><button class="btn" data-t="despesa">Despesa</button><button class="btn off" data-t="receita">Receita</button></div>
-<div class="two"><div><label>Data da compra</label><input type="date" id="fDC"></div><div><label>Data do registro</label><input type="date" id="fDR"></div></div>
+<div class="two"><div><label>Data do registro</label><input type="date" id="fDR"></div><div><label>Data da compra</label><input type="date" id="fDC"></div></div>
 <div class="two"><div><label>Categoria</label><select id="fCat"></select></div><div><label>Subcategoria</label><select id="fSub"></select></div></div>
 <div class="two d-only"><div><label>Classificação</label><select id="fCl"><option>Obrigatório</option><option>Supérfluo</option></select></div><div><label>Cartão</label><select id="fCa"></select></div></div>
 <div class="d-only"><label>Responsável pela compra (marque um ou mais)</label><details class="dd"><summary id="fReS">Selecionar</summary><div id="fRe"></div></details></div>
@@ -165,16 +165,16 @@ function delTx(){if(confirm('Excluir este lançamento?')){S.tx=S.tx.filter(x=>x.
 function cfgFill(){$('cfC').value=S.cfg.cartoes.join('\n');$('cfP').value=S.cfg.pessoas.join('\n');$('cfK').value=Object.entries(S.cfg.cats).map(([k,v])=>k+': '+v.join(', ')).join('\n')}
 function saveCfg(){const L=id=>$(id).value.split('\n').map(s=>s.trim()).filter(Boolean);S.cfg.cartoes=L('cfC');S.cfg.pessoas=L('cfP');S.cfg.cats={};L('cfK').forEach(l=>{const[k,v='']=l.split(':');S.cfg.cats[k.trim()]=v.split(',').map(s=>s.trim()).filter(Boolean)});save();alert('Cadastros salvos.')}
 const H=['Tipo','Data do registro','Data da compra','Categoria','Subcategoria','Classificação','Cartão','Responsável','Divisão','Parcelado','Parcela atual','Total de parcelas','Valor da parcela','Valor total','Falta quitar','Observação'];
-function expo(f){const rows=S.tx.map(t=>[t.tipo=='receita'?'Receita':'Despesa',t.dr,t.dc,t.cat,t.sub,t.classe,t.cartao,t.resp,Object.entries(t.div||{}).map(([p,v])=>p+'='+v).join(';'),t.total>1?'Parcelado':'À vista',t.atual,t.total,t.valor,tot(t),falta(t),t.obs]);
-const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([H,...rows]),'Lançamentos');
+function expo(f){const P=[...S.cfg.pessoas];S.tx.forEach(t=>Object.keys(t.div||{}).forEach(p=>{if(!P.includes(p))P.push(p)}));const H2=[...H.slice(0,8),...P,...H.slice(9)];const rows=S.tx.map(t=>[t.tipo=='receita'?'Receita':'Despesa',t.dr,t.dc,t.cat,t.sub,t.classe,t.cartao,t.resp,...P.map(p=>(t.div||{})[p]??''),t.total>1?'Parcelado':'À vista',t.atual,t.total,t.valor,tot(t),falta(t),t.obs]);
+const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([H2,...rows]),'Lançamentos');
 const b=new Blob([XLSX.write(wb,{bookType:f,type:'array'})],{type:'application/octet-stream'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='controle-financeiro-'+today()+'.'+f;a.click()}
 function nd(x){if(!x)return today();if(x instanceof Date)return x.toISOString().slice(0,10);x=String(x).trim();const m=x.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:x.slice(0,10)}
 const num=x=>typeof x=='number'?x:parseFloat(String(x||0).replace(/[R$\s.]/g,'').replace(',','.'))||0;
 async function impo(f){if(!f)return;try{const wb=XLSX.read(await f.arrayBuffer(),{cellDates:true}),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);let n=0;
-rows.forEach(r=>{const v=num(r['Valor da parcela']);if(!v)return;const rec=/rec/i.test(r['Tipo']||''),div={};String(r['Divisão']||'').split(';').forEach(s=>{const[p,x]=s.split('=');if(p&&x)div[p.trim()]=num(x)});
+rows.forEach(r=>{const v=num(r['Valor da parcela']);if(!v)return;const rec=/rec/i.test(r['Tipo']||''),div={};String(r['Divisão']||'').split(';').forEach(s=>{const[p,x]=s.split('=');if(p&&x)div[p.trim()]=num(x)});Object.keys(r).forEach(k=>{if(!H.includes(k)&&num(r[k])>0)div[k.trim()]=num(r[k])});
 const t={id:Date.now()+'-'+n++,tipo:rec?'receita':'despesa',dr:nd(r['Data do registro']),dc:nd(r['Data da compra']),cat:r['Categoria']||'',sub:r['Subcategoria']||'',classe:/sup/i.test(r['Classificação']||'')?'Supérfluo':'Obrigatório',cartao:r['Cartão']||'',resp:r['Responsável']||'',div,total:Math.max(1,num(r['Total de parcelas'])||1),atual:Math.max(1,num(r['Parcela atual'])||1),valor:v,obs:r['Observação']||''};
 if(!rec&&!Object.keys(div).length&&t.resp){const rs=t.resp.split(/\s*[,;]\s*/);rs.forEach(p=>t.div[p]=v/rs.length)}fixDiv(t);S.tx.push(t);
-if(t.cartao&&!cn().includes(t.cartao))S.cfg.cartoes.push(t.cartao);(t.resp||'').split(/\s*[,;]\s*/).filter(Boolean).forEach(p=>{if(!S.cfg.pessoas.includes(p))S.cfg.pessoas.push(p)});
+if(t.cartao&&!cn().includes(t.cartao))S.cfg.cartoes.push(t.cartao);(t.resp||'').split(/\s*[,;]\s*/).filter(Boolean).forEach(p=>{if(!S.cfg.pessoas.includes(p))S.cfg.pessoas.push(p)});Object.keys(t.div||{}).forEach(p=>{if(!S.cfg.pessoas.includes(p))S.cfg.pessoas.push(p)});
 if(t.cat){S.cfg.cats[t.cat]=S.cfg.cats[t.cat]||[];if(t.sub&&!S.cfg.cats[t.cat].includes(t.sub))S.cfg.cats[t.cat].push(t.sub)}});
 save();cfgFill();render();alert(n+' lançamentos importados.')}catch(e){alert('Não foi possível ler o arquivo.')}$('imp').value=''}
 function clearAll(){if(confirm('Apagar todos os lançamentos?'+(SY.on?' Isso também apaga da nuvem e dos outros aparelhos.':''))){S.tx=[];save();render()}}

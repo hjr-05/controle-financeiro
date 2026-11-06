@@ -1,5 +1,5 @@
 // Aumente o número da versão (v2 -> v3 ...) a cada atualização do app
-const V='v2',HOSTS=['cdnjs.cloudflare.com','fonts.googleapis.com','fonts.gstatic.com','www.gstatic.com'],
+const V='v3',HOSTS=['cdnjs.cloudflare.com','fonts.googleapis.com','fonts.gstatic.com','www.gstatic.com'],
 EXT=['https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js','https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js','https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js','https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js','https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'],
 LOCAL=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(V).then(async c=>{await c.addAll(LOCAL.map(u=>new Request(u,{cache:'reload'})));await Promise.all(EXT.map(u=>c.add(new Request(u,{mode:'no-cors'})).catch(()=>{})))})));
