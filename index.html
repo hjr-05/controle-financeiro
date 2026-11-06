@@ -4,6 +4,7 @@
 <meta name="color-scheme" content="dark">
 <title>Meu Controle</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#121212"><meta name="mobile-web-app-capable" content="yes"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -62,6 +63,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 <label>Categorias (uma por linha: Categoria: sub1, sub2)</label><textarea id="cfK" rows="6"></textarea>
 <div class="acts"><button class="btn" onclick="saveCfg()">Salvar cadastros</button></div></div>
 <div class="card full"><h2>Aparência</h2><div class="seg"><button class="btn" id="th-dark" onclick="setTheme('dark')">Escuro</button><button class="btn off" id="th-light" onclick="setTheme('light')">Claro</button></div></div>
+<div class="card full"><h2>Sincronização na nuvem</h2><p id="syI" style="font-size:.85rem;color:var(--mute);margin-top:0"></p><div class="acts" style="margin:0"><button class="btn" id="syIn" onclick="syLogin()">Entrar com Google</button><button class="btn s hide" id="syOut" onclick="syLogout()">Sair</button></div></div>
 <div class="card full"><h2>Backup automático</h2>
 <div class="two"><div><label>Frequência</label><select id="bkF" onchange="bkSet()"><option value="0">Desligado</option><option value="1">Diário</option><option value="7">Semanal</option><option value="30">Mensal</option></select></div><div><label>Formato</label><select id="bkT" onchange="bkSet()"><option value="xlsx">Excel (.xlsx)</option><option value="csv">CSV</option></select></div></div>
 <p id="bkI" style="font-size:.8rem;color:var(--mute)"></p><div class="acts" style="margin:0 0 6px"><button class="btn" onclick="doBackup()">Fazer backup agora</button></div>
@@ -98,7 +100,7 @@ const ym=d=>{const[a,b]=d.split('-');return +a*12+(+b-1)};
 const mname=i=>new Date(Math.floor(i/12),i%12,1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
 let S={tx:[],cfg:{cartoes:['Nubank, 5, 12','Itaú, 20, 28'],pessoas:['Eu','Cônjuge'],cats:{Moradia:['Aluguel','Contas'],Alimentação:['Mercado','Restaurante'],Transporte:['Combustível','App'],Lazer:['Streaming','Passeios'],Saúde:['Farmácia','Consulta'],Outros:['Diversos']}}};
 let fresh=true;try{const r=localStorage.getItem('mc1');if(r){S=JSON.parse(r);fresh=false}}catch(e){}
-const save=()=>{try{localStorage.setItem('mc1',JSON.stringify(S))}catch(e){}};
+const save=()=>{try{localStorage.setItem('mc1',JSON.stringify(S))}catch(e){}try{syncPush()}catch(e){}};
 let cur=ym(today()),tipo='despesa',editId=null,charts={},dm='v',touched=[],locked=false,lastT=0;
 const tot=t=>t.tipo=='receita'?t.valor:t.valor*t.total, falta=t=>t.tipo=='receita'?0:(t.total-t.atual)*t.valor;
 function parcelaEm(t,mi){if(t.tipo=='receita')return ym(t.dc)==mi?t.valor:0;const j=mi-ym(t.dc)+t.atual;return j>=1&&j<=t.total?t.valor:0}
@@ -175,7 +177,7 @@ if(!rec&&!Object.keys(div).length&&t.resp){const rs=t.resp.split(/\s*[,;]\s*/);r
 if(t.cartao&&!cn().includes(t.cartao))S.cfg.cartoes.push(t.cartao);(t.resp||'').split(/\s*[,;]\s*/).filter(Boolean).forEach(p=>{if(!S.cfg.pessoas.includes(p))S.cfg.pessoas.push(p)});
 if(t.cat){S.cfg.cats[t.cat]=S.cfg.cats[t.cat]||[];if(t.sub&&!S.cfg.cats[t.cat].includes(t.sub))S.cfg.cats[t.cat].push(t.sub)}});
 save();cfgFill();render();alert(n+' lançamentos importados.')}catch(e){alert('Não foi possível ler o arquivo.')}$('imp').value=''}
-function clearAll(){if(confirm('Apagar todos os lançamentos?')){S.tx=[];save();render()}}
+function clearAll(){if(confirm('Apagar todos os lançamentos?'+(SY.on?' Isso também apaga da nuvem e dos outros aparelhos.':''))){S.tx=[];save();render()}}
 function sample(){const d=new Date(),dt=(o,y)=>{const x=new Date(d.getFullYear(),d.getMonth()+o,y);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')},N='Nubank',I='Itaú',E='Eu',P='Cônjuge',s='Supérfluo',h={[E]:.5,[P]:.5},e={[E]:1},c={[P]:1},n=Date.now();
 const R=[...[-1,0].flatMap(o=>[['receita',o,5,'Salário','','','',{},1,1,4800,'Salário Eu'],['receita',o,5,'Salário','','','',{},1,1,3600,'Salário Cônjuge'],['despesa',o,6,'Moradia','Aluguel','',N,h,1,1,1800,''],['despesa',o,8,'Alimentação','Mercado','',N,h,1,1,650,''],['despesa',o,10,'Lazer','Streaming',s,N,e,1,1,55.9,'Assinaturas']]),
 ['receita',0,15,'Freelance','','','',{},1,1,900,'Projeto extra'],['despesa',0,12,'Alimentação','Restaurante',s,I,c,1,1,180,'Jantar'],['despesa',0,14,'Transporte','Combustível','',I,e,1,1,250,''],['despesa',0,16,'Saúde','Consulta','',N,e,1,1,220,''],
@@ -198,5 +200,39 @@ function restSnap(i){try{const a=JSON.parse(localStorage.getItem('mcsn')||'[]');
 function dueCheck(){const f=+bk().freq;if(!f)return;const l=bk().last;if(!l){bk().last=today();save();return}if((new Date(today())-new Date(l))/864e5>=f&&!$('bnb')){snap();bkFill();bn('bnb','Backup pendente, toque para baixar',doBackup)}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)dueCheck()});
 try{if('serviceWorker' in navigator&&location.protocol.startsWith('http')){const had=!!navigator.serviceWorker.controller;let rl=0;navigator.serviceWorker.register('sw.js').then(r=>{const chk=w=>{if(w&&navigator.serviceWorker.controller)bn('bnu','Nova versão disponível, toque para atualizar',()=>w.postMessage({type:'SKIP_WAITING'}))};chk(r.waiting);r.addEventListener('updatefound',()=>{const w=r.installing;w.addEventListener('statechange',()=>{if(w.state=='installed')chk(w)})});setInterval(()=>r.update(),3600000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})}).catch(()=>{});navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||rl)return;rl=1;location.reload()})}}catch(e){}
+const FBC={apiKey:"AIzaSyA126U7JYbuOAf9i2QgqHQuNuh-8vs079o",authDomain:"controle-financeiro-15fec.firebaseapp.com",projectId:"controle-financeiro-15fec",storageBucket:"controle-financeiro-15fec.firebasestorage.app",messagingSenderId:"222876397579",appId:"1:222876397579:web:620c87396b6464dcd4d70e"};
+const SY={on:0,ready:0,applying:0,cm:{},cj:'',un:[],em:'',uid:'',retry:0};
+const cfgJ=c=>{const x=Object.assign({},c);delete x.bk;return JSON.stringify(x)};
+const localSave=()=>{try{localStorage.setItem('mc1',JSON.stringify(S))}catch(e){}};
+const MSG0='Entre com sua conta Google para manter os dados iguais no computador e no celular. Sem login, os dados ficam só neste aparelho.';
+function sst(t){const e=$('syI');if(e)e.textContent=(SY.em?'Conta: '+SY.em+'. ':'')+t}
+function syUI(){$('syIn').classList.toggle('hide',!!SY.em);$('syOut').classList.toggle('hide',!SY.em)}
+function syncPush(){if(!SY.on||!SY.ready||SY.applying)return;const col=SY.db.collection('users/'+SY.uid+'/tx');let b=SY.db.batch(),n=0;
+const fl=()=>{if(n){b.commit().catch(e=>sst('Erro ao enviar ('+(e.code||'')+').'));b=SY.db.batch();n=0}},seen={};
+S.tx.forEach(t=>{seen[t.id]=1;const j=JSON.stringify(t);if(SY.cm[t.id]!==j){b.set(col.doc(t.id),JSON.parse(j));SY.cm[t.id]=j;if(++n>=400)fl()}});
+Object.keys(SY.cm).forEach(id=>{if(!seen[id]){b.delete(col.doc(id));delete SY.cm[id];if(++n>=400)fl()}});fl();
+const cj=cfgJ(S.cfg);if(cj!==SY.cj){SY.cj=cj;SY.db.doc('users/'+SY.uid+'/meta/cfg').set({json:cj,t:Date.now()}).catch(()=>{})}}
+async function syConnect(u){SY.uid=u.uid;SY.em=u.email||'';SY.on=0;SY.ready=0;syUI();sst('Conectando...');
+const flag='mcsy_'+u.uid,first=!localStorage.getItem(flag),tx=SY.db.collection('users/'+u.uid+'/tx'),cf=SY.db.doc('users/'+u.uid+'/meta/cfg');
+try{
+if(first){const[cs,cc]=await Promise.all([tx.get({source:'server'}),cf.get({source:'server'})]);const cm={};cs.forEach(d=>cm[d.id]=d.data());const M=Object.keys(cm).length;let keep=true;
+if(S.tx.length&&M)keep=confirm('Este aparelho tem '+S.tx.length+' lançamentos e a nuvem tem '+M+'.\n\nOK = juntar os dois.\nCancelar = usar só os da nuvem (os deste aparelho serão descartados).');
+S.tx=keep?[...Object.values(cm),...S.tx.filter(t=>!cm[t.id])]:Object.values(cm);SY.cm={};Object.keys(cm).forEach(k=>SY.cm[k]=JSON.stringify(cm[k]));
+if(cc.exists){const r=JSON.parse(cc.data().json);SY.cj=JSON.stringify(r);S.cfg=Object.assign(r,{bk:S.cfg.bk})}else SY.cj='';
+localStorage.setItem(flag,'1');SY.on=1;SY.ready=1;syncPush()}else{SY.cj=cfgJ(S.cfg);SY.on=1}
+localSave();cfgFill();render();SY.un.forEach(f=>f());
+SY.un=[tx.onSnapshot(sn=>{if(sn.metadata.fromCache&&sn.empty&&!SY.ready)return;SY.applying=1;const a=[];SY.cm={};sn.forEach(d=>{const t=d.data();a.push(t);SY.cm[d.id]=JSON.stringify(t)});S.tx=a;localSave();SY.applying=0;SY.ready=1;render();
+sst(sn.metadata.hasPendingWrites?'Enviando alterações...':sn.metadata.fromCache?'Offline: as alterações serão enviadas quando a internet voltar.':'Sincronizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.')},e=>sst('Erro de sincronização ('+(e.code||'')+').')),
+cf.onSnapshot(d=>{if(!d.exists)return;const r=JSON.parse(d.data().json),j=JSON.stringify(r);if(j===SY.cj)return;SY.cj=j;S.cfg=Object.assign(r,{bk:S.cfg.bk});localSave();cfgFill();render()},()=>{})]
+}catch(e){if(first){SY.on=0;SY.retry=u;sst(e.code=='permission-denied'?'Sem permissão: confira as regras do Firestore.':'Sem conexão. A sincronização será concluída quando a internet voltar.')}else sst('Erro ('+(e.code||'')+').')}}
+function syOff(){SY.un.forEach(f=>f());SY.un=[];if(SY.uid)localStorage.removeItem('mcsy_'+SY.uid);SY.on=0;SY.ready=0;SY.em='';SY.uid='';SY.cm={};syUI();sst(MSG0)}
+function syLogin(){if(!SY.auth){sst('Sincronização indisponível agora. Abra o app com internet.');return}const p=new firebase.auth.GoogleAuthProvider();
+SY.auth.signInWithPopup(p).catch(e=>{const c=e.code||'';if(c=='auth/unauthorized-domain')sst('Domínio não autorizado: adicione '+location.hostname+' em Authentication > Configurações > Domínios autorizados.');else if(c=='auth/popup-blocked'||c=='auth/operation-not-supported-in-this-environment')SY.auth.signInWithRedirect(p);else if(c!='auth/popup-closed-by-user'&&c!='auth/cancelled-popup-request')sst('Falha no login ('+c+').')})}
+function syLogout(){if(confirm('Sair da nuvem? Os dados continuam neste aparelho.'))SY.auth.signOut()}
+function syInit(){syUI();sst(MSG0);try{if(typeof firebase=='undefined'){sst('Sincronização indisponível sem internet no primeiro acesso. Abra o app online.');return}
+firebase.initializeApp(FBC);SY.auth=firebase.auth();SY.db=firebase.firestore();try{SY.db.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}
+SY.auth.getRedirectResult().catch(()=>{});SY.auth.onAuthStateChanged(u=>u?syConnect(u):syOff())}catch(e){sst('Erro ao iniciar a sincronização.')}}
+window.addEventListener('online',()=>{if(SY.retry){const u=SY.retry;SY.retry=0;syConnect(u)}});
 if(fresh)sample();S.tx.forEach(t=>fixDiv(t));save();cfgFill();setTheme(th);bkFill();dueCheck();
+syInit();
 </script></body></html>
