@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#121212;--card:#1C1C1E;--ink:#EDEDED;--mute:#9A9A9A;--line:#2E2E31;--sage:#A8C3A0;--rose:#E8B4B8;--blue:#9DB4C0;--peach:#F4C7A8;--acc:#7FA37A;--sh:0 4px 16px rgba(0,0,0,.4);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#121212;--card:#1C1C1E;--ink:#EDEDED;--mute:#9A9A9A;--line:#2E2E31;--sage:#8FC98B;--rose:#F29AA8;--blue:#7FB0C8;--peach:#F5B07C;--acc:#5FA85A;--sh:0 4px 16px rgba(0,0,0,.4);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:Roboto,system-ui,sans-serif;padding-bottom:90px;max-width:760px;margin:auto}
 h1,h2,h3{font-weight:600;margin:0}h2{font-size:1rem;margin-bottom:10px}
@@ -22,7 +22,7 @@ header{padding:18px 18px 4px;display:flex;justify-content:space-between;align-it
 .row{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.88rem}
 .row:last-child{border:0}.row small{color:var(--mute);display:block;font-size:.74rem}
 .bar{height:6px;background:var(--line);border-radius:9px;margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--sage)}
-.pos{color:var(--acc)}.neg{color:#C98086}
+.pos{color:var(--acc)}.neg{color:#E0707E}.btn:disabled{opacity:.45}
 nav{position:fixed;bottom:0;left:0;right:0;max-width:760px;margin:auto;background:var(--card);border-top:1px solid var(--line);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px))}
 nav button{flex:1;background:none;border:0;color:var(--mute);font:inherit;font-size:.8rem;padding:6px}nav button.on{color:var(--ink);font-weight:600}
 .fab{position:fixed;right:20px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;border:0;background:var(--sage);color:#33402F;font-size:2rem;box-shadow:0 6px 18px rgba(80,110,70,.35);z-index:5}
@@ -59,7 +59,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 <section class="pg" id="p-fat"><div class="grid">
 <div class="card full"><h2>Faturas por cartão (vencimento)</h2><div style="overflow-x:auto"><table id="fTab"></table></div></div>
 <div class="card full"><h2>Evolução das faturas</h2><div class="canvas"><canvas id="c8"></canvas></div></div>
-<div class="card full"><h2>Detalhe da fatura</h2><div class="two"><div><label>Fatura (vencimento)</label><select id="fM" onchange="fatSel()"></select></div><div><label>Cartão</label><select id="fC" onchange="fatSel()"></select></div></div><div id="fRes"></div><div id="fLst"></div></div>
+<div class="card full"><h2>Detalhe da fatura</h2><div class="two"><div><label>Fatura (vencimento)</label><select id="fM" onchange="fatSel()"></select></div><div><label>Cartão</label><select id="fC" onchange="fatSel()"></select></div></div><div id="fRes"></div><div class="acts" style="align-items:center;justify-content:space-between"><label class="ck" style="margin:0"><input type="checkbox" id="bAll" onchange="selAll(this.checked)"> Selecionar todas</label><button class="btn" id="bBtn" onclick="openB()" disabled>Editar selecionadas (0)</button></div><div id="fLst"></div></div>
 </div></section>
 <section class="pg" id="p-list"><div class="grid"><div class="card full"><h2>Lançamentos</h2><div id="list"></div></div></div></section>
 
@@ -70,7 +70,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 <label>Categorias (uma por linha: Categoria: sub1, sub2)</label><textarea id="cfK" rows="6"></textarea>
 <label>Apps/sites da compra (um por linha)</label><textarea id="cfA" rows="5"></textarea>
 <div class="acts"><button class="btn" onclick="saveCfg()">Salvar cadastros</button></div></div>
-<div class="card full"><h2>Cores</h2><p style="font-size:.82rem;color:var(--mute);margin-top:0">Escolha a cor de cada cartão, categoria e subcategoria. Elas valem para os gráficos e a aba Faturas.</p><div id="cores"></div><div class="acts"><button class="btn s" onclick="resetCores()">Restaurar cores padrão</button></div></div>
+<div class="card full"><h2>Cores</h2><p style="font-size:.82rem;color:var(--mute);margin-top:0">Escolha a cor de cada cartão e categoria. As subcategorias seguem a cor da categoria em degradê. Valem para os gráficos e a aba Faturas.</p><div id="cores"></div><div class="acts"><button class="btn s" onclick="resetCores()">Restaurar cores padrão</button></div></div>
 <div class="card full"><h2>Aparência</h2><div class="seg"><button class="btn" id="th-dark" onclick="setTheme('dark')">Escuro</button><button class="btn off" id="th-light" onclick="setTheme('light')">Claro</button></div></div>
 <div class="card full"><h2>Sincronização na nuvem</h2><p id="syI" style="font-size:.85rem;color:var(--mute);margin-top:0"></p><div class="acts" style="margin:0"><button class="btn" id="syIn" onclick="syLogin()">Entrar com Google</button><button class="btn s hide" id="syOut" onclick="syLogout()">Sair</button></div></div>
 <div class="card full"><h2>Backup automático</h2>
@@ -86,6 +86,13 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 <button class="fab" onclick="openF()" aria-label="Adicionar">+</button>
 <nav><button class="on" onclick="go('home',this)">Início</button><button onclick="go('fat',this)">Faturas</button><button onclick="go('list',this)">Lançamentos</button><button onclick="go('cfg',this)">Ajustes</button></nav>
 
+<dialog id="dlgB"><h2 id="bT">Editar em lote</h2><p style="font-size:.82rem;color:var(--mute);margin-top:0">Só os campos que você alterar serão modificados nas compras selecionadas (em todas as parcelas de cada compra).</p>
+<label>Categoria</label><select id="bCat"></select><label>Subcategoria</label><select id="bSub"></select>
+<div class="two"><div><label>Classificação</label><select id="bCl"></select></div><div><label>Cartão</label><select id="bCa"></select></div></div>
+<label>App/site da compra</label><select id="bAp"></select>
+<label>Responsáveis (marque para alterar)</label><details class="dd"><summary id="bReS">(não alterar)</summary><div id="bRe"></div></details><div id="bDv"></div>
+<label>Observação</label><select id="bObm"><option value="">(não alterar)</option><option value="set">Substituir por…</option><option value="add">Acrescentar…</option></select><input type="text" id="bOb" class="hide" placeholder="Texto da observação" style="margin-top:8px">
+<div class="acts"><button class="btn" onclick="saveB()">Aplicar</button><button class="btn s" onclick="$('dlgB').close()">Cancelar</button></div></dialog>
 <dialog id="dlg"><h2 id="dt">Novo lançamento</h2>
 <div class="seg" id="tipo"><button class="btn" data-t="despesa">Despesa</button><button class="btn off" data-t="receita">Receita</button></div>
 <div class="two"><div><label>Data do registro</label><input type="date" id="fDR"></div><div><label>Data da compra</label><input type="date" id="fDC"></div></div>
@@ -103,7 +110,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 </dialog>
 
 <script>
-const $=i=>document.getElementById(i),PAL=['#A8C3A0','#E8B4B8','#9DB4C0','#F4C7A8','#C9B8DC','#F2E2A0','#B5D8D0'];
+const $=i=>document.getElementById(i),PAL=['#8DC48A','#F29AA8','#7FB0C8','#F5B07C','#B79CE0','#F0D060','#7FD0C0'];
 const brl=n=>(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const today=()=>new Date().toISOString().slice(0,10);
 const ym=d=>{const[a,b]=d.split('-');return +a*12+(+b-1)};
@@ -131,7 +138,7 @@ mk('c2',{type:'line',data:{labels:ms.map(mname),datasets:cards.map((c,i)=>({labe
 const byK=agg((t,v,o)=>o[t.cat||'—']=(o[t.cat||'—']||0)+v);
 mk('c3',{type:'doughnut',data:{labels:Object.keys(byK),datasets:[{data:Object.values(byK),backgroundColor:Object.keys(byK).map(k=>cor('cat',k,keys().indexOf(k))),borderWidth:0}]}});
 const byL=agg((t,v,o)=>o[t.classe]=(o[t.classe]||0)+v);
-mk('c4',{type:'doughnut',data:{labels:Object.keys(byL),datasets:[{data:Object.values(byL),backgroundColor:[PAL[1],PAL[0]],borderWidth:0}]}});
+mk('c4',{type:'doughnut',data:{labels:Object.keys(byL),datasets:[{data:Object.values(byL),backgroundColor:Object.keys(byL).map(k=>k=='Obrigatório'?'#5B9BD5':'#F7B6CE'),borderWidth:0}]}});
 const byR=agg((t,v,o)=>{const d=t.div||{},s=Object.values(d).reduce((a,b)=>a+b,0)||1;Object.entries(d).forEach(([p,x])=>o[p]=(o[p]||0)+v*x/s)});
 mk('c5',{type:'bar',data:{labels:Object.keys(byR),datasets:[{data:Object.values(byR),backgroundColor:Object.keys(byR).map(p=>respColor(p)),borderRadius:8}]},options:{indexAxis:'y'}});
 const bySb=agg((t,v,o)=>{const k=(t.cat||'—')+'|'+(t.sub||'—');o[k]=(o[k]||0)+v}),sbk=Object.keys(bySb);
@@ -147,16 +154,34 @@ const opts=(a,sel)=>a.map(x=>`<option${x==sel?' selected':''}>${x}</option>`).jo
 const cn=()=>S.cfg.cartoes.map(c=>c.split(',')[0].trim()),keys=()=>Object.keys(S.cfg.cats);
 const APPS=['Ifood','Uber','99','Amazon','Mercado Livre','Aliexpress','Shopee','Shein','Renner','C&A','Magalu','Kabum','Pichau','Outros'],apps=()=>S.cfg.apps||APPS;
 const cor=(tp,k,i)=>(S.cfg.cores&&S.cfg.cores[tp]&&S.cfg.cores[tp][k])||PAL[((i%PAL.length)+PAL.length)%PAL.length];
-const corSub=(c,s)=>(S.cfg.cores&&S.cfg.cores.sub&&S.cfg.cores.sub[c+'|'+s])||cor('cat',c,keys().indexOf(c));
-const tones=n=>Array.from({length:n},(_,i)=>`hsl(200,24%,${n<2?58:32+i*(46/(n-1))}%)`);
+const hx=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)),shade=(h,t)=>{const m=t<0?0:255,a=Math.abs(t);return '#'+hx(h).map(v=>Math.round(v+(m-v)*a).toString(16).padStart(2,'0')).join('')};
+const corSub=(c,s)=>{const b=cor('cat',c,keys().indexOf(c)),L=S.cfg.cats[c]||[],i=L.indexOf(s),n=L.length;return shade(b,n<2||i<0?0:-0.22+i*(0.62/(n-1)))};
+const tones=n=>Array.from({length:n},(_,i)=>`hsl(200,38%,${n<2?58:32+i*(46/(n-1))}%)`);
 const respColor=p=>{const P=S.cfg.pessoas,i=P.indexOf(p),n=Math.max(P.length,1);return tones(n)[i<0?n-1:i]};
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 const corRow=(tp,k,hex,label)=>`<div class="row" style="align-items:center"><span>${esc(label)}</span><input type="color" value="${hex}" data-t="${tp}" data-k="${esc(k)}" onchange="setCor(this)"></div>`;
-function corUI(){let h='<label>Cartões e bancos</label>'+cn().map((c,i)=>corRow('cartao',c,cor('cartao',c,i),c)).join('')+'<label>Categorias</label>'+keys().map((k,i)=>corRow('cat',k,cor('cat',k,i),k)).join('')+'<label>Subcategorias (sem cor própria, usam a da categoria)</label>'+keys().map(k=>(S.cfg.cats[k]||[]).map(s=>corRow('sub',k+'|'+s,corSub(k,s),k+' · '+s)).join('')).join('');$('cores').innerHTML=h}
+function corUI(){let h='<label>Cartões e bancos</label>'+cn().map((c,i)=>corRow('cartao',c,cor('cartao',c,i),c)).join('')+'<label>Categorias</label>'+keys().map((k,i)=>corRow('cat',k,cor('cat',k,i),k)).join('')+'<label>Subcategorias (degradê automático da cor da categoria)</label>'+keys().map(k=>(S.cfg.cats[k]||[]).map(s=>`<div class="row" style="align-items:center"><span>${esc(k+' · '+s)}</span><i class="dot" style="background:${corSub(k,s)};width:46px;height:22px;border-radius:8px;margin:0"></i></div>`).join('')).join('');$('cores').innerHTML=h}
 function setCor(e){const c=S.cfg.cores=S.cfg.cores||{};(c[e.dataset.t]=c[e.dataset.t]||{})[e.dataset.k]=e.value;save();render()}
 function resetCores(){if(confirm('Restaurar as cores padrão?')){S.cfg.cores={};save();corUI();render()}}
-const FS={m:null,c:''};
-function fatSel(){FS.m=+$('fM').value;FS.c=$('fC').value;render()}
+const FS={m:null,c:'',ids:[]};
+const FB=new Set(),oB=(a,l)=>`<option value="">${l||'(não alterar)'}</option>`+a.map(x=>`<option>${esc(x)}</option>`).join('');
+function updB(){const n=FB.size,b=$('bBtn');b.textContent='Editar selecionadas ('+n+')';b.disabled=!n}
+function selB(id,v){v?FB.add(id):FB.delete(id);updB()}
+function selAll(v){(FS.ids||[]).forEach(id=>v?FB.add(id):FB.delete(id));document.querySelectorAll('#fLst input').forEach(i=>i.checked=v);updB()}
+function bReChg(){const r=[...document.querySelectorAll('#bRe input:checked')].map(i=>i.value);$('bReS').textContent=r.join(', ')||'(não alterar)';const sh=+(100/Math.max(r.length,1)).toFixed(2);
+$('bDv').innerHTML=r.length>1?'<label>Divisão da parcela (%)</label>'+r.map((p,i)=>`<label class="ck" style="justify-content:space-between">${esc(p)}<input type="number" step="0.01" min="0" data-p="${esc(p)}" value="${i==r.length-1?+(100-sh*(r.length-1)).toFixed(2):sh}" style="width:100px"></label>`).join(''):''}
+function openB(){if(!FB.size)return;$('bT').textContent='Editar '+FB.size+' compra'+(FB.size>1?'s':'');$('bCat').innerHTML=oB(keys());$('bSub').innerHTML=oB([]);$('bSub').disabled=true;$('bCl').innerHTML=oB(['Obrigatório','Supérfluo']);$('bCa').innerHTML=oB(cn());$('bAp').innerHTML=oB(apps());
+$('bRe').innerHTML=S.cfg.pessoas.map(p=>`<label class="ck"><input type="checkbox" value="${esc(p)}" onchange="bReChg()"> ${esc(p)}</label>`).join('');bReChg();$('bObm').value='';$('bOb').value='';$('bOb').classList.add('hide');$('dlgB').showModal()}
+$('bCat').onchange=()=>{const c=$('bCat').value;$('bSub').disabled=!c;$('bSub').innerHTML=c?oB(S.cfg.cats[c]||[],'(vazia)'):oB([])};
+$('bObm').onchange=()=>$('bOb').classList.toggle('hide',!$('bObm').value);
+function saveB(){const cat=$('bCat').value,sub=$('bSub').value,cl=$('bCl').value,ca=$('bCa').value,ap=$('bAp').value,om=$('bObm').value,ot=$('bOb').value.trim(),r=[...document.querySelectorAll('#bRe input:checked')].map(i=>i.value);let pc=null;
+if(!cat&&!cl&&!ca&&!ap&&!r.length&&!om)return alert('Escolha ao menos um campo para alterar.');
+if(r.length){pc={};if(r.length==1)pc[r[0]]=100;else{[...document.querySelectorAll('#bDv input')].forEach(i=>pc[i.dataset.p]=+i.value||0);if(Math.abs(Object.values(pc).reduce((a,b)=>a+b,0)-100)>0.02)return alert('A divisão deve somar 100%.')}}
+if(om=='set'&&!ot&&!confirm('Apagar a observação das compras selecionadas?'))return;
+S.tx.forEach(t=>{if(!FB.has(t.id))return;if(cat){t.cat=cat;t.sub=sub}if(cl)t.classe=cl;if(ca)t.cartao=ca;if(ap)t.app=ap;if(pc){t.resp=r.join(', ');t.div={};Object.entries(pc).forEach(([p,x])=>t.div[p]=+(t.valor*x/100).toFixed(2))}if(om=='set')t.obs=ot;else if(om=='add'&&ot)t.obs=(t.obs?t.obs+' | ':'')+ot});
+save();$('dlgB').close();FB.clear();render()}
+
+function fatSel(){FS.m=+$('fM').value;FS.c=$('fC').value;FB.clear();render()}
 function renderFat(){
 const dsp=S.tx.filter(t=>t.tipo=='despesa'),cs=cn(),all=[...cs,...new Set(dsp.map(t=>t.cartao||'').filter(x=>x&&!cs.includes(x)))];if(dsp.some(t=>!t.cartao))all.push('');
 const ms=Array.from({length:12},(_,i)=>cur-2+i),lab=c=>c||'Sem cartão',cl=(c,i)=>cor('cartao',lab(c),i),val=(c,m)=>dsp.filter(t=>(t.cartao||'')==c).reduce((s,t)=>s+parcelaEm(t,m),0),f=v=>v?brl(v):'–';
@@ -168,11 +193,11 @@ mk('c8',{type:'bar',data:{labels:ms.map(mname),datasets:all.map((c,i)=>({label:l
 if(FS.m===null||!ms.includes(FS.m))FS.m=cur;if(FS.c&&!all.includes(FS.c))FS.c='';
 $('fM').innerHTML=ms.map(m=>`<option value="${m}"${m==FS.m?' selected':''}>${mname(m)}</option>`).join('');
 $('fC').innerHTML='<option value="">Todos os cartões</option>'+all.filter(c=>c).map(c=>`<option value="${esc(c)}"${c==FS.c?' selected':''}>${esc(c)}</option>`).join('');
-const it=dsp.filter(t=>(!FS.c||t.cartao==FS.c)&&parcelaEm(t,FS.m)>0).map(t=>({t,v:parcelaEm(t,FS.m)})).sort((a,b)=>b.t.dc.localeCompare(a.t.dc)),tot=it.reduce((s,x)=>s+x.v,0),bc={},bp={};
+const it=dsp.filter(t=>(!FS.c||t.cartao==FS.c)&&parcelaEm(t,FS.m)>0).map(t=>({t,v:parcelaEm(t,FS.m)})).sort((a,b)=>b.t.dc.localeCompare(a.t.dc)),tot=it.reduce((s,x)=>s+x.v,0),bc={},bp={};FS.ids=it.map(x=>x.t.id);[...FB].forEach(id=>{if(!FS.ids.includes(id))FB.delete(id)});updB();$('bAll').checked=!!FS.ids.length&&FS.ids.every(id=>FB.has(id));
 it.forEach(({t,v})=>{const k=t.cartao||'';bc[k]=(bc[k]||0)+v;const d=t.div||{},s=Object.values(d).reduce((a,b)=>a+b,0)||1;Object.entries(d).forEach(([p,x])=>bp[p]=(bp[p]||0)+v*x/s)});
 const ci=FS.c?cardInfo(FS.c):null,dd=ci?' · vence '+String(ci.V).padStart(2,'0')+'/'+String(FS.m%12+1).padStart(2,'0')+'/'+String(Math.floor(FS.m/12)).slice(2):'',chip=(c,t)=>`<span style="white-space:nowrap"><i class="dot" style="background:${c}"></i>${t}</span>`;
 $('fRes').innerHTML=`<div class="tot">Total da fatura: <b>${brl(tot)}</b>${dd}</div>`+(FS.c?'':`<div class="tot">Por cartão: ${Object.entries(bc).map(([c,v])=>chip(cl(c,all.indexOf(c)),esc(lab(c))+' '+brl(v))).join(' &nbsp; ')||'–'}</div>`)+`<div class="tot">Por responsável: ${Object.entries(bp).map(([p,v])=>chip(respColor(p),esc(p)+' '+brl(v))).join(' &nbsp; ')||'–'}</div>`;
-$('fLst').innerHTML=it.map(({t,v})=>`<div class="row" onclick="openF('${t.id}')"><span>${esc(t.nomeF||t.cat||'—')}<small>${t.dc.split('-').reverse().join('/')} · ${esc(t.cartao||'')}${t.app?' · '+esc(t.app):''} · ${FS.m-fat(t)+t.atual}/${t.total}</small></span><b>${brl(v)}</b></div>`).join('')||'<small>Nenhuma compra nesta fatura.</small>'}
+$('fLst').innerHTML=it.map(({t,v})=>`<div class="row" onclick="openF('${t.id}')"><span style="display:flex;gap:10px;align-items:center"><input type="checkbox" style="width:auto" ${FB.has(t.id)?'checked':''} onclick="event.stopPropagation()" onchange="selB('${t.id}',this.checked)"><span>${esc(t.nomeF||t.cat||'—')}<small>${t.dc.split('-').reverse().join('/')} · ${esc(t.cartao||'')}${t.app?' · '+esc(t.app):''} · ${FS.m-fat(t)+t.atual}/${t.total}</small></span></span><b>${brl(v)}</b></div>`).join('')||'<small>Nenhuma compra nesta fatura.</small>'}
 
 function fillSub(sel){$('fSub').innerHTML=opts(['',...(S.cfg.cats[$('fCat').value]||[])],sel)}
 function setTipo(t){tipo=t;document.querySelectorAll('#tipo button').forEach(b=>b.classList.toggle('off',b.dataset.t!=t));document.querySelectorAll('.d-only').forEach(e=>e.classList.toggle('hide',t=='receita'));$('lV').textContent=t=='receita'?'Valor (R$)':'Valor da parcela (R$)';dwr()}
