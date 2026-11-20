@@ -42,7 +42,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 
 <div id="bn" style="padding:0 18px"></div>
 <section class="pg on" id="p-home"><div class="grid">
-<div class="card kpi"><small>Gasto no mês</small><b id="k1"></b></div>
+<div class="card kpi"><small>Faturas do mês</small><b id="k1"></b></div>
 <div class="card kpi"><small>Receitas</small><b id="k2"></b></div>
 <div class="card kpi"><small>Saldo</small><b id="k3"></b></div>
 <div class="card kpi"><small>Total a quitar</small><b id="k4"></b></div>
@@ -58,7 +58,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 
 <section class="pg" id="p-cfg"><div class="grid">
 <div class="card full"><h2>Cadastros</h2>
-<label>Cartões (um por linha: Nome, fechamento, vencimento)</label><textarea id="cfC" rows="3"></textarea>
+<label>Cartões (um por linha: Nome, dia do fechamento, dia do vencimento. Ex.: Nubank, 24, 1). Compras feitas até o dia do fechamento entram na fatura daquele mês; as seguintes vão para a próxima.</label><textarea id="cfC" rows="3"></textarea>
 <label>Pessoas (uma por linha)</label><textarea id="cfP" rows="3"></textarea>
 <label>Categorias (uma por linha: Categoria: sub1, sub2)</label><textarea id="cfK" rows="6"></textarea>
 <div class="acts"><button class="btn" onclick="saveCfg()">Salvar cadastros</button></div></div>
@@ -82,7 +82,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 <div class="two"><div><label>Data do registro</label><input type="date" id="fDR"></div><div><label>Data da compra</label><input type="date" id="fDC"></div></div>
 <div class="two"><div><label>Categoria</label><select id="fCat"></select></div><div><label>Subcategoria</label><select id="fSub"></select></div></div>
 <div class="two d-only"><div><label>Classificação</label><select id="fCl"><option>Obrigatório</option><option>Supérfluo</option></select></div><div><label>Cartão</label><select id="fCa"></select></div></div>
-<div class="two d-only"><div><label>Nome original</label><input type="text" id="fNo"></div><div><label>Nome final</label><input type="text" id="fNf"></div></div>
+<div class="d-only"><label>Nome original</label><input type="text" id="fNo"><label>Nome final</label><input type="text" id="fNf"></div>
 <div class="d-only"><label>Responsável pela compra (marque um ou mais)</label><details class="dd"><summary id="fReS">Selecionar</summary><div id="fRe"></div></details></div>
 <div class="d-only"><label>Parcelamento</label><select id="fPa"><option value="v">À vista</option><option value="p">Parcelado</option></select>
 <div class="two" id="parc"><div><label>Parcela atual</label><input type="number" id="fAt" min="1" value="1"></div><div><label>Total de parcelas</label><input type="number" id="fTo" min="1" value="1"></div></div></div>
@@ -99,19 +99,22 @@ const brl=n=>(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const today=()=>new Date().toISOString().slice(0,10);
 const ym=d=>{const[a,b]=d.split('-');return +a*12+(+b-1)};
 const mname=i=>new Date(Math.floor(i/12),i%12,1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
-let S={tx:[],cfg:{cartoes:['Nubank, 5, 12','Itaú, 20, 28'],pessoas:['Eu','Cônjuge'],cats:{Moradia:['Aluguel','Contas'],Alimentação:['Mercado','Restaurante'],Transporte:['Combustível','App'],Lazer:['Streaming','Passeios'],Saúde:['Farmácia','Consulta'],Outros:['Diversos']}}};
+let S={tx:[],cfg:{cartoes:['Nubank','Itaú'],pessoas:['Eu','Cônjuge'],cats:{Moradia:['Aluguel','Contas'],Alimentação:['Mercado','Restaurante'],Transporte:['Combustível','App'],Lazer:['Streaming','Passeios'],Saúde:['Farmácia','Consulta'],Outros:['Diversos']}}};
 let fresh=true;try{const r=localStorage.getItem('mc1');if(r){S=JSON.parse(r);fresh=false}}catch(e){}
 const save=()=>{try{localStorage.setItem('mc1',JSON.stringify(S))}catch(e){}try{syncPush()}catch(e){}};
 let cur=ym(today()),tipo='despesa',editId=null,charts={},dm='v',touched=[],locked=false,lastT=0;
 const tot=t=>t.tipo=='receita'?t.valor:t.valor*t.total, falta=t=>t.tipo=='receita'?0:(t.total-t.atual)*t.valor;
-function parcelaEm(t,mi){if(t.tipo=='receita')return ym(t.dc)==mi?t.valor:0;const j=mi-ym(t.dc)+t.atual;return j>=1&&j<=t.total?t.valor:0}
+function cardInfo(n){const c=S.cfg.cartoes.find(x=>x.split(',')[0].trim()==n);if(!c)return null;const p=c.split(','),F=parseInt(p[1]),V=parseInt(p[2]);return F>=1&&F<=31&&V>=1&&V<=31?{F,V}:null}
+function fat(t){if(t.tipo=='receita'||!t.cartao)return ym(t.dc);const c=cardInfo(t.cartao);if(!c)return ym(t.dc);const d=+t.dc.slice(8,10),mc=ym(t.dc)+(d>c.F?1:0);return mc+(c.V>c.F?0:1)}
+const fl=t=>t.tipo=='despesa'&&t.cartao&&cardInfo(t.cartao)?mname(fat(t)):'';
+function parcelaEm(t,mi){if(t.tipo=='receita')return ym(t.dc)==mi?t.valor:0;const j=mi-fat(t)+t.atual;return j>=1&&j<=t.total?t.valor:0}
 function mk(id,cfg){if(charts[id])charts[id].destroy();Chart.defaults.font.family='Roboto,sans-serif';Chart.defaults.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--line').trim();Chart.defaults.color=getComputedStyle(document.body).color;cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:cfg.type=='doughnut',position:'bottom',labels:{boxWidth:10}}}},cfg.options||{});charts[id]=new Chart($(id),cfg)}
 function agg(fn){const o={};S.tx.filter(t=>t.tipo=='despesa').forEach(t=>{const v=parcelaEm(t,cur);if(v)fn(t,v,o)});return o}
 function render(){
 $('mlabel').textContent=mname(cur);
 const dsp=S.tx.filter(t=>t.tipo=='despesa'),g=dsp.reduce((s,t)=>s+parcelaEm(t,cur),0),r=S.tx.filter(t=>t.tipo=='receita').reduce((s,t)=>s+parcelaEm(t,cur),0);
 $('k1').textContent=brl(g);$('k2').textContent=brl(r);$('k3').textContent=brl(r-g);$('k3').className=r-g>=0?'pos':'neg';
-$('k4').textContent=brl(dsp.reduce((s,t)=>s+(ym(t.dc)+(t.total-t.atual)>cur?Math.min(t.total-t.atual,ym(t.dc)+(t.total-t.atual)-cur)*t.valor:0),0));
+$('k4').textContent=brl(dsp.reduce((s,t)=>s+(fat(t)+(t.total-t.atual)>cur?Math.min(t.total-t.atual,fat(t)+(t.total-t.atual)-cur)*t.valor:0),0));
 const byC=agg((t,v,o)=>o[t.cartao||'—']=(o[t.cartao||'—']||0)+v);
 mk('c1',{type:'bar',data:{labels:Object.keys(byC),datasets:[{data:Object.values(byC),backgroundColor:PAL,borderRadius:8}]}});
 const ms=[0,1,2,3,4,5].map(i=>cur+i),cards=S.cfg.cartoes.map(c=>c.split(',')[0].trim());
@@ -122,9 +125,9 @@ const byL=agg((t,v,o)=>o[t.classe]=(o[t.classe]||0)+v);
 mk('c4',{type:'doughnut',data:{labels:Object.keys(byL),datasets:[{data:Object.values(byL),backgroundColor:[PAL[1],PAL[0]],borderWidth:0}]}});
 const byR=agg((t,v,o)=>{const d=t.div||{},s=Object.values(d).reduce((a,b)=>a+b,0)||1;Object.entries(d).forEach(([p,x])=>o[p]=(o[p]||0)+v*x/s)});
 mk('c5',{type:'bar',data:{labels:Object.keys(byR),datasets:[{data:Object.values(byR),backgroundColor:PAL.slice(2),borderRadius:8}]},options:{indexAxis:'y'}});
-const act=dsp.filter(t=>t.total>1&&ym(t.dc)+(t.total-t.atual)>=cur);
-$('prog').innerHTML=act.map(t=>{const j=Math.min(t.total,Math.max(1,cur-ym(t.dc)+t.atual));return `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><span>${t.cat||'—'} · ${t.cartao||''}<small>${t.obs||t.sub||''}</small></span><b>${j}/${t.total}</b></div><div class="bar"><i style="width:${j/t.total*100}%"></i></div><small>Falta ${brl(Math.max(0,t.total-j)*t.valor)} de ${brl(tot(t))}</small></div>`}).join('')||'<small>Nenhum parcelamento ativo.</small>';
-$('list').innerHTML=[...S.tx].sort((a,b)=>b.dc.localeCompare(a.dc)).map(t=>`<div class="row" onclick="openF('${t.id}')"><span>${t.nomeF?t.nomeF+' · ':''}${t.cat||'—'}${t.sub?' · '+t.sub:''}<small>${t.dc.split('-').reverse().join('/')} ${t.tipo=='despesa'?'· '+(t.cartao||'')+' · '+t.classe+(t.total>1?' · '+t.atual+'/'+t.total:''):''}</small>${t.tipo=='despesa'&&(t.total>1||Object.keys(t.div||{}).length>1)?'<small>'+Object.entries(t.div||{}).map(([p,x])=>p+' '+brl(x)+(t.total>1?' · total '+brl(x*t.total):'')).join(' | ')+'</small>':''}</span><span style="text-align:right"><b class="${t.tipo=='receita'?'pos':''}">${t.tipo=='receita'?'+':''}${brl(t.valor)}</b><small>${t.total>1?'Total '+brl(tot(t))+' · falta '+brl(falta(t)):''}</small></span></div>`).join('')||'<small>Toque em + para começar.</small>';
+const act=dsp.filter(t=>t.total>1&&fat(t)+(t.total-t.atual)>=cur);
+$('prog').innerHTML=act.map(t=>{const j=Math.min(t.total,Math.max(1,cur-fat(t)+t.atual));return `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><span>${t.cat||'—'} · ${t.cartao||''}<small>${t.obs||t.sub||''}</small></span><b>${j}/${t.total}</b></div><div class="bar"><i style="width:${j/t.total*100}%"></i></div><small>Falta ${brl(Math.max(0,t.total-j)*t.valor)} de ${brl(tot(t))}</small></div>`}).join('')||'<small>Nenhum parcelamento ativo.</small>';
+$('list').innerHTML=[...S.tx].sort((a,b)=>b.dc.localeCompare(a.dc)).map(t=>`<div class="row" onclick="openF('${t.id}')"><span>${t.nomeF?t.nomeF+' · ':''}${t.cat||'—'}${t.sub?' · '+t.sub:''}<small>${t.dc.split('-').reverse().join('/')} ${t.tipo=='despesa'?'· '+(t.cartao||'')+' · '+t.classe+(fl(t)?' · fatura '+fl(t):'')+(t.total>1?' · '+t.atual+'/'+t.total:''):''}</small>${t.tipo=='despesa'&&(t.total>1||Object.keys(t.div||{}).length>1)?'<small>'+Object.entries(t.div||{}).map(([p,x])=>p+' '+brl(x)+(t.total>1?' · total '+brl(x*t.total):'')).join(' | ')+'</small>':''}</span><span style="text-align:right"><b class="${t.tipo=='receita'?'pos':''}">${t.tipo=='receita'?'+':''}${brl(t.valor)}</b><small>${t.total>1?'Total '+brl(tot(t))+' · falta '+brl(falta(t)):''}</small></span></div>`).join('')||'<small>Toque em + para começar.</small>';
 }
 function mv(d){cur+=d;render()}
 function go(p,b){document.querySelectorAll('.pg').forEach(x=>x.classList.remove('on'));$('p-'+p).classList.add('on');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(p=='home')render()}
@@ -165,7 +168,7 @@ const t={id:editId||Date.now()+'',tipo,dr:$('fDR').value,dc:$('fDC').value||toda
 if(editId)S.tx=S.tx.map(x=>x.id==editId?t:x);else S.tx.push(t);save();$('dlg').close();render()}
 function delTx(){if(confirm('Excluir este lançamento?')){S.tx=S.tx.filter(x=>x.id!=editId);save();$('dlg').close();render()}}
 function cfgFill(){$('cfC').value=S.cfg.cartoes.join('\n');$('cfP').value=S.cfg.pessoas.join('\n');$('cfK').value=Object.entries(S.cfg.cats).map(([k,v])=>k+': '+v.join(', ')).join('\n')}
-function saveCfg(){const L=id=>$(id).value.split('\n').map(s=>s.trim()).filter(Boolean);S.cfg.cartoes=L('cfC');S.cfg.pessoas=L('cfP');S.cfg.cats={};L('cfK').forEach(l=>{const[k,v='']=l.split(':');S.cfg.cats[k.trim()]=v.split(',').map(s=>s.trim()).filter(Boolean)});save();alert('Cadastros salvos.')}
+function saveCfg(){const L=id=>$(id).value.split('\n').map(s=>s.trim()).filter(Boolean);S.cfg.cartoes=L('cfC');S.cfg.pessoas=L('cfP');S.cfg.cats={};L('cfK').forEach(l=>{const[k,v='']=l.split(':');S.cfg.cats[k.trim()]=v.split(',').map(s=>s.trim()).filter(Boolean)});save();render();alert('Cadastros salvos.')}
 const H=['Tipo','Data do registro','Data da compra','Categoria','Subcategoria','Classificação','Cartão','Nome original','Nome final','Responsável','Divisão','Parcelado','Parcela atual','Total de parcelas','Valor da parcela','Valor total','Falta quitar','Observação'];
 function expo(f){const P=[...S.cfg.pessoas];S.tx.forEach(t=>Object.keys(t.div||{}).forEach(p=>{if(!P.includes(p))P.push(p)}));const H2=[...H.slice(0,10),...P,...H.slice(11)];const rows=S.tx.map(t=>[t.tipo=='receita'?'Receita':'Despesa',t.dr,t.dc,t.cat,t.sub,t.classe,t.cartao,t.nomeO||'',t.nomeF||'',t.resp,...P.map(p=>(t.div||{})[p]??''),t.total>1?'Parcelado':'À vista',t.atual,t.total,t.valor,tot(t),falta(t),t.obs]);
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([H2,...rows]),'Lançamentos');
