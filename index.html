@@ -55,9 +55,9 @@ dialog{width:min(600px,94vw)}#dlgD{width:min(780px,94vw)}}.dw{position:relative}
 <div class="card kpi"><small>Total a quitar</small><b id="k4"></b></div>
 <div class="card full"><h2>Gasto por cartão</h2><div class="canvas"><canvas id="c1"></canvas></div></div>
 <div class="card full"><h2>Faturas dos próximos meses</h2><div class="canvas"><canvas id="c2"></canvas></div></div>
-<div class="card"><h2>Categorias</h2><div class="canvas"><canvas id="c3"></canvas></div></div>
-<div class="card"><h2>Supérfluo × obrigatório</h2><div class="canvas"><canvas id="c4"></canvas></div></div>
-<div class="card full"><h2>Subcategorias</h2><div class="canvas" style="height:260px"><canvas id="c7"></canvas></div></div>
+<div class="card full"><h2>Categorias</h2><div class="canvas" style="height:270px"><canvas id="c3"></canvas></div></div>
+<div class="card full"><h2>Supérfluo × obrigatório</h2><div class="canvas" style="height:270px"><canvas id="c4"></canvas></div></div>
+<div class="card full"><h2>Subcategorias (do maior para o menor)</h2><div id="subL"></div></div>
 <div class="card full"><h2>Quanto cada responsável deve</h2><div class="canvas"><canvas id="c5"></canvas></div></div>
 <div class="card full"><h2>Gasto por app/site</h2><div class="canvas"><canvas id="c6"></canvas></div></div>
 <div class="card full"><h2>Parcelamentos em andamento</h2><div id="prog"></div></div>
@@ -150,14 +150,15 @@ mk('c1',{type:'bar',data:{labels:Object.keys(byC),datasets:[{data:Object.values(
 const ms=[0,1,2,3,4,5].map(i=>cur+i),cards=S.cfg.cartoes.map(c=>c.split(',')[0].trim());
 mk('c2',{type:'line',data:{labels:ms.map(mname),datasets:cards.map((c,i)=>({label:c,data:ms.map(m=>dsp.filter(t=>t.cartao==c).reduce((s,t)=>s+parcelaEm(t,m),0)),borderColor:cor('cartao',c,i),backgroundColor:cor('cartao',c,i),tension:.35,pointHitRadius:14,pointRadius:4}))},options:{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10}}}}});
 const byK=agg((t,v,o)=>o[t.cat||'—']=(o[t.cat||'—']||0)+v);
-mk('c3',{type:'doughnut',data:{labels:Object.keys(byK),datasets:[{data:Object.values(byK),backgroundColor:Object.keys(byK).map(k=>cor('cat',k,keys().indexOf(k))),borderWidth:0}]}});
+mk('c3',{type:'doughnut',data:{labels:Object.keys(byK),datasets:[{data:Object.values(byK),backgroundColor:Object.keys(byK).map(k=>cor('cat',k,keys().indexOf(k))),borderWidth:0}]},options:{plugins:{vlbl:{mode:'arc'},legend:DLEG}}});
 const byL=agg((t,v,o)=>o[t.classe]=(o[t.classe]||0)+v);
-mk('c4',{type:'doughnut',data:{labels:Object.keys(byL),datasets:[{data:Object.values(byL),backgroundColor:Object.keys(byL).map(k=>k=='Obrigatório'?'#5B9BD5':'#F7B6CE'),borderWidth:0}]}});
+mk('c4',{type:'doughnut',data:{labels:Object.keys(byL),datasets:[{data:Object.values(byL),backgroundColor:Object.keys(byL).map(k=>k=='Obrigatório'?'#5B9BD5':'#F7B6CE'),borderWidth:0}]},options:{plugins:{vlbl:{mode:'arc'},legend:DLEG}}});
 const byR=agg((t,v,o)=>{const d=t.div||{},s=Object.values(d).reduce((a,b)=>a+b,0)||1;Object.entries(d).forEach(([p,x])=>o[p]=(o[p]||0)+v*x/s)});
 mk('c5',{type:'bar',data:{labels:Object.keys(byR),datasets:[{data:Object.values(byR),backgroundColor:Object.keys(byR).map(p=>respColor(p)),borderRadius:8}]},options:{indexAxis:'y'}});
-const bySb=agg((t,v,o)=>{const k=(t.cat||'—')+'|'+(t.sub||'—');o[k]=(o[k]||0)+v}),sbk=Object.keys(bySb);
-mk('c7',{type:'bar',data:{labels:sbk.map(k=>k.split('|').reverse().join(' · ')),datasets:[{data:sbk.map(k=>bySb[k]),backgroundColor:sbk.map(k=>{const[c,s]=k.split('|');return corSub(c,s)}),borderRadius:8}]},options:{indexAxis:'y'}});charts.c7._keys=sbk;
-const byA=agg((t,v,o)=>{const k=t.app||'Sem app/site';o[k]=(o[k]||0)+v});mk('c6',{type:'bar',data:{labels:Object.keys(byA),datasets:[{data:Object.values(byA),backgroundColor:PAL,borderRadius:8}]},options:{indexAxis:'y'}});
+const bySb=agg((t,v,o)=>{const k=(t.cat||'—')+'|'+(t.sub||'—');o[k]=(o[k]||0)+v}),sbk=Object.keys(bySb).sort((a,b)=>bySb[b]-bySb[a]),sbT=sbk.reduce((s,k)=>s+bySb[k],0);
+$('subL').innerHTML=sbk.map((k,i)=>{const[c,s]=k.split('|');return `<div class="row sbr" data-k="${esc(k)}" style="align-items:center;cursor:pointer"><span style="display:flex;align-items:center;gap:10px"><i class="dot" style="background:${corSub(c,s)};margin:0;flex:none"></i><span>${i+1}. ${esc(s=='—'?'Sem subcategoria':s)}<small>${esc(c)}</small></span></span><span style="text-align:right"><b>${brl(bySb[k])}</b><small>${pct(bySb[k],sbT)}</small></span></div>`}).join('')||'<small>Sem compras neste mês.</small>';
+document.querySelectorAll('#subL .sbr').forEach(e=>e.onclick=()=>{const[c,s]=e.dataset.k.split('|');showDrill((s=='—'?'sem subcategoria':s)+' · '+c,cur,t=>(t.cat||'—')==c&&(t.sub||'—')==s)});
+const byA=agg((t,v,o)=>{const k=t.app||'Sem app/site';o[k]=(o[k]||0)+v});mk('c6',{type:'bar',data:{labels:Object.keys(byA),datasets:[{data:Object.values(byA),backgroundColor:PAL,borderRadius:8}]},options:{indexAxis:'y',layout:{padding:{right:90}},plugins:{legend:{display:false},vlbl:{mode:'bar'}}}});
 const act=dsp.filter(t=>t.total>1&&fat(t)+(t.total-t.atual)>=cur);
 $('prog').innerHTML=act.map(t=>{const j=Math.min(t.total,Math.max(1,cur-fat(t)+t.atual));return `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><span>${t.cat||'—'} · ${t.cartao||''}<small>${t.obs||t.sub||''}</small></span><b>${j}/${t.total}</b></div><div class="bar"><i style="width:${j/t.total*100}%"></i></div><small>Falta ${brl(Math.max(0,t.total-j)*t.valor)} de ${brl(tot(t))}</small></div>`}).join('')||'<small>Nenhum parcelamento ativo.</small>';
 $('list').innerHTML=[...S.tx].sort((a,b)=>b.dc.localeCompare(a.dc)).map(t=>`<div class="row" onclick="openF('${t.id}')"><span>${t.nomeF?t.nomeF+' · ':''}${t.cat||'—'}${t.sub?' · '+t.sub:''}<small>${t.dc.split('-').reverse().join('/')} ${t.tipo=='despesa'?'· '+(t.cartao||'')+(t.app?' · '+t.app:'')+' · '+t.classe+(fl(t)?' · fatura '+fl(t):'')+(t.total>1?' · '+t.atual+'/'+t.total:''):''}</small>${t.tipo=='despesa'&&(t.total>1||Object.keys(t.div||{}).length>1)?'<small>'+Object.entries(t.div||{}).map(([p,x])=>p+' '+brl(x)+(t.total>1?' · total '+brl(x*t.total):'')).join(' | ')+'</small>':''}</span><span style="text-align:right"><b class="${t.tipo=='receita'?'pos':''}">${t.tipo=='receita'?'+':''}${brl(t.valor)}</b><small>${t.total>1?'Total '+brl(tot(t))+' · falta '+brl(falta(t)):''}</small></span></div>`).join('')||'<small>Toque em + para começar.</small>';renderFat();
@@ -177,6 +178,14 @@ const corRow=(tp,k,hex,label)=>`<div class="row" style="align-items:center"><spa
 function corUI(){let h='<label>Cartões e bancos</label>'+cn().map((c,i)=>corRow('cartao',c,cor('cartao',c,i),c)).join('')+'<label>Categorias</label>'+keys().map((k,i)=>corRow('cat',k,cor('cat',k,i),k)).join('')+'<label>Subcategorias (degradê automático da cor da categoria)</label>'+keys().map(k=>(S.cfg.cats[k]||[]).map(s=>`<div class="row" style="align-items:center"><span>${esc(k+' · '+s)}</span><i class="dot" style="background:${corSub(k,s)};width:46px;height:22px;border-radius:8px;margin:0"></i></div>`).join('')).join('');$('cores').innerHTML=h}
 function setCor(e){const c=S.cfg.cores=S.cfg.cores||{};(c[e.dataset.t]=c[e.dataset.t]||{})[e.dataset.k]=e.value;save();render()}
 function resetCores(){if(confirm('Restaurar as cores padrão?')){S.cfg.cores={};save();corUI();render()}}
+const pct=(v,t)=>t?(v/t*100).toFixed(1).replace('.',',')+'%':'0%',lum=c=>{if(!/^#[0-9a-f]{6}$/i.test(c))return .5;const[r,g,b]=hx(c).map(v=>v/255);return .2126*r+.7152*g+.0722*b};
+const DLEG={display:true,position:'bottom',labels:{boxWidth:10,generateLabels:ch=>{const ds=ch.data.datasets[0],d=ds.data,t=d.reduce((a,b)=>a+b,0);return ch.data.labels.map((l,i)=>({text:l+' · '+brl(d[i])+' ('+pct(d[i],t)+')',fillStyle:ds.backgroundColor[i],strokeStyle:ds.backgroundColor[i],lineWidth:0,hidden:!ch.getDataVisibility(i),index:i}))}}};
+Chart.defaults.plugins.tooltip.callbacks.label=c=>{const v=c.raw;if(c.chart.config.type=='doughnut')return c.label+': '+brl(v)+' ('+pct(v,c.dataset.data.reduce((a,b)=>a+b,0))+')';return (c.dataset.label?c.dataset.label+': ':'')+brl(typeof v=='number'?v:c.parsed.x)};
+Chart.register({id:'vlbl',afterDatasetsDraw(ch,a,o){if(!o||!o.mode)return;const ctx=ch.ctx;ctx.save();ctx.font='600 11px Roboto,sans-serif';ctx.textBaseline='middle';
+ch.data.datasets.forEach((ds,di)=>{const meta=ch.getDatasetMeta(di);if(meta.hidden)return;const tot=ds.data.reduce((s,v,i)=>ch.getDataVisibility(i)?s+v:s,0);
+meta.data.forEach((el,i)=>{const v=ds.data[i];if(!v||!ch.getDataVisibility(i))return;
+if(o.mode=='arc'){const p=v/tot;if(p<0.06)return;const c=el.tooltipPosition(),bg=Array.isArray(ds.backgroundColor)?ds.backgroundColor[i]:ds.backgroundColor;ctx.fillStyle=lum(bg)>0.6?'#1d1d1f':'#fff';ctx.textAlign='center';ctx.fillText(brl(v),c.x,c.y-7);ctx.fillText((p*100).toFixed(1).replace('.',',')+'%',c.x,c.y+7)}
+else{ctx.fillStyle=getComputedStyle(document.body).color;ctx.textAlign='left';ctx.fillText(brl(v),el.x+6,el.y)}})});ctx.restore()}});
 const FS={m:null,c:'',ids:[],cat:'',sub:'',cl:'',pe:'',ap:'',tp:'',q:''};
 const toBR=d=>d?d.split('-').reverse().join('/'):'',fromBR=s=>{const m=String(s).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);return m?`${m[3]}-${m[2]}-${m[1]}`:''},dv=s=>{const d=fromBR(s);if(!d)return '';const x=new Date(d);return !isNaN(x)&&x.toISOString().slice(0,10)==d?d:''};
 function mask(e){const v=e.target.value.replace(/\D/g,'').slice(0,8);e.target.value=v.length>4?v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4):v.length>2?v.slice(0,2)+'/'+v.slice(2):v}
