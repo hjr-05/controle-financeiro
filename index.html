@@ -35,13 +35,20 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 .btn{border:0;border-radius:14px;padding:11px 16px;font:inherit;background:var(--sage);color:#33402F;font-weight:600}.btn.s{background:var(--line);color:var(--ink)}.btn.d{background:var(--rose);color:#5A2E33}
 .seg{display:flex;gap:8px}.seg button{flex:1}.seg .off{background:var(--line);color:var(--mute)}
 .tot{background:var(--card);border-radius:12px;padding:10px;margin-top:10px;font-size:.85rem;border:1px dashed var(--line)}
-.hide{display:none!important}.dd{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}.dd summary{cursor:pointer;font-size:.92rem}.ck{display:flex;align-items:center;gap:8px;margin:8px 0 0;color:var(--ink);font-size:.9rem}.ck input{width:auto}.dw{position:relative}.dw .cal{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:1.1rem;padding:6px;color:var(--mute)}.dw input[type=date]{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;left:0;bottom:0;padding:0;border:0}.dc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:10px;cursor:pointer}.dh{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}.kv{display:flex;justify-content:space-between;gap:12px;font-size:.78rem;padding:2px 0}.kv span:first-child{color:var(--mute);white-space:nowrap}.kv span:last-child{text-align:right}input[type=color]{width:46px;height:34px;padding:2px;cursor:pointer}table{border-collapse:collapse;font-size:.8rem;width:100%}th,td{padding:8px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card)}th.cur,td.cur{font-weight:700;background:var(--line)}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}.bn{background:var(--card);border:1px solid var(--sage);border-radius:14px;padding:10px 14px;margin-top:8px;font-size:.88rem;display:flex;justify-content:space-between;gap:10px;align-items:center;cursor:pointer}
+.hide{display:none!important}.dd{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}.dd summary{cursor:pointer;font-size:.92rem}.ck{display:flex;align-items:center;gap:8px;margin:8px 0 0;color:var(--ink);font-size:.9rem}.ck input{width:auto}#dlgD{background:transparent;overflow:visible;padding:0;border:0;max-height:none}#dlgD .dbox{background:var(--bg);border-radius:22px;padding:18px;max-height:80vh;overflow:auto}#dlgD .xbtn{position:absolute;top:-48px;right:0;width:38px;height:38px;border-radius:50%;border:0;background:var(--card);color:var(--ink);font-size:1.1rem;box-shadow:var(--sh);cursor:pointer;line-height:1}
+@media(min-width:900px){body{max-width:none;margin:0;padding:0 28px 40px 232px}
+nav{top:0;bottom:0;left:0;right:auto;width:204px;max-width:none;margin:0;flex-direction:column;justify-content:flex-start;gap:6px;padding:28px 12px;border-top:0;border-right:1px solid var(--line)}
+nav button{flex:none;text-align:left;padding:12px 14px;border-radius:12px;font-size:.95rem}nav button.on{background:var(--line)}
+header,.grid{max-width:1400px}header{padding:26px 0 8px}header h1{font-size:1.6rem}#bn{padding:0!important;max-width:1400px}
+.grid{grid-template-columns:repeat(4,1fr);gap:16px;padding:12px 0}.grid>.card{grid-column:span 2}.grid>.kpi{grid-column:span 1}.grid>.wide{grid-column:1/-1}
+.canvas{height:280px}.kpi b{font-size:1.5rem}table{font-size:.9rem}.fab{right:36px;bottom:32px}
+dialog{width:min(600px,94vw)}#dlgD{width:min(780px,94vw)}}.dw{position:relative}.dw .cal{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:1.1rem;padding:6px;color:var(--mute)}.dw input[type=date]{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;left:0;bottom:0;padding:0;border:0}.dc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:10px;cursor:pointer}.dh{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}.kv{display:flex;justify-content:space-between;gap:12px;font-size:.78rem;padding:2px 0}.kv span:first-child{color:var(--mute);white-space:nowrap}.kv span:last-child{text-align:right}input[type=color]{width:46px;height:34px;padding:2px;cursor:pointer}table{border-collapse:collapse;font-size:.8rem;width:100%}th,td{padding:8px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card)}th.cur,td.cur{font-weight:700;background:var(--line)}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}.bn{background:var(--card);border:1px solid var(--sage);border-radius:14px;padding:10px 14px;margin-top:8px;font-size:.88rem;display:flex;justify-content:space-between;gap:10px;align-items:center;cursor:pointer}
 :root[data-theme="light"]{--bg:#F1F1F2;--card:#FFFFFF;--ink:#1F1F21;--mute:#6E6E73;--line:#E0E0E3;--sh:0 4px 16px rgba(0,0,0,.07)}.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 </style></head><body>
 <header><h1>Meu Controle</h1><div class="mes"><button onclick="mv(-1)">‹</button><b id="mlabel"></b><button onclick="mv(1)">›</button></div></header>
 
 <div id="bn" style="padding:0 18px"></div>
-<section class="pg on" id="p-home"><div class="grid"><div class="full" style="font-size:.78rem;color:var(--mute);padding:0 4px">Toque em um item dos gráficos para ver as compras.</div>
+<section class="pg on" id="p-home"><div class="grid"><div class="full wide" style="font-size:.78rem;color:var(--mute);padding:0 4px">Toque em um item dos gráficos para ver as compras.</div>
 <div class="card kpi"><small>Faturas do mês</small><b id="k1"></b></div>
 <div class="card kpi"><small>Receitas</small><b id="k2"></b></div>
 <div class="card kpi"><small>Saldo</small><b id="k3"></b></div>
@@ -57,7 +64,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 </div></section>
 
 <section class="pg" id="p-fat"><div class="grid">
-<div class="card full"><h2>Faturas por cartão (vencimento)</h2><div style="overflow-x:auto"><table id="fTab"></table></div></div>
+<div class="card full wide"><h2>Faturas por cartão (vencimento)</h2><div style="overflow-x:auto"><table id="fTab"></table></div></div>
 <div class="card full"><h2>Evolução das faturas</h2><div class="canvas"><canvas id="c8"></canvas></div></div>
 <div class="card full"><h2>Detalhe da fatura</h2><div class="two"><div><label>Fatura (vencimento)</label><select id="fM" onchange="fatSel()"></select></div><div><label>Cartão</label><select id="fC" onchange="fatSel()"></select></div></div><details class="dd" style="margin-top:10px"><summary id="xSum">Mais filtros</summary>
 <div class="two"><div><label>Categoria</label><select id="xCat" onchange="fx()"></select></div><div><label>Subcategoria</label><select id="xSub" onchange="fx()"></select></div></div>
@@ -67,7 +74,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 <div class="acts"><button class="btn s" onclick="fclear()">Limpar filtros</button></div></details>
 <div id="fRes"></div><div class="acts" style="align-items:center;justify-content:space-between"><label class="ck" style="margin:0"><input type="checkbox" id="bAll" onchange="selAll(this.checked)"> Selecionar todas</label><button class="btn" id="bBtn" onclick="openB()" disabled>Editar selecionadas (0)</button></div><div id="fLst"></div></div>
 </div></section>
-<section class="pg" id="p-list"><div class="grid"><div class="card full"><h2>Lançamentos</h2><div id="list"></div></div></div></section>
+<section class="pg" id="p-list"><div class="grid"><div class="card full wide"><h2>Lançamentos</h2><div id="list"></div></div></div></section>
 
 <section class="pg" id="p-cfg"><div class="grid">
 <div class="card full"><h2>Cadastros</h2>
@@ -92,7 +99,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px soli
 <button class="fab" onclick="openF()" aria-label="Adicionar">+</button>
 <nav><button class="on" onclick="go('home',this)">Início</button><button onclick="go('fat',this)">Faturas</button><button onclick="go('list',this)">Lançamentos</button><button onclick="go('cfg',this)">Ajustes</button></nav>
 
-<dialog id="dlgD"><h2 id="dT"></h2><div class="tot" id="dS"></div><div id="dL"></div><div class="acts"><button class="btn s" onclick="$('dlgD').close()">Fechar</button></div></dialog>
+<dialog id="dlgD"><button class="xbtn" onclick="$('dlgD').close()" aria-label="Fechar">✕</button><div class="dbox"><h2 id="dT"></h2><div class="tot" id="dS"></div><div id="dL"></div></div></dialog>
 <dialog id="dlgB"><h2 id="bT">Editar em lote</h2><p style="font-size:.82rem;color:var(--mute);margin-top:0">Só os campos que você alterar serão modificados nas compras selecionadas (em todas as parcelas de cada compra).</p>
 <label>Categoria</label><select id="bCat"></select><label>Subcategoria</label><select id="bSub"></select>
 <div class="two"><div><label>Classificação</label><select id="bCl"></select></div><div><label>Cartão</label><select id="bCa"></select></div></div>
@@ -183,11 +190,12 @@ function drill(id,di,idx,ch){const lb=ch.data.labels[idx],dl=(ch.data.datasets[d
 if(id=='c1')pr=t=>(t.cartao||'—')==lb;else if(id=='c2'){m=cur+idx;tt=dl+' · '+lb;pr=t=>(t.cartao||'')==dl}else if(id=='c3')pr=t=>(t.cat||'—')==lb;else if(id=='c4')pr=t=>t.classe==lb;else if(id=='c5'){who=lb;pr=t=>((t.div||{})[lb]||0)>0}else if(id=='c6')pr=t=>lb=='Sem app/site'?!t.app:t.app==lb;
 else if(id=='c7'){const[c,s]=(ch._keys||[])[idx].split('|');tt=(s=='—'?'sem subcategoria':s)+' · '+c;pr=t=>(t.cat||'—')==c&&(t.sub||'—')==s}else if(id=='c8'){m=cur-2+idx;tt=dl+' · '+lb;pr=t=>(t.cartao||'')==(dl=='Sem cartão'?'':dl)}
 showDrill(tt,m,pr,who)}
+$('dlgD').addEventListener('click',e=>{if(e.target===$('dlgD'))$('dlgD').close()});
 function showDrill(tt,m,pr,who){const it=S.tx.filter(t=>t.tipo=='despesa'&&parcelaEm(t,m)>0&&pr(t)).sort((a,b)=>b.dc.localeCompare(a.dc)),tot=it.reduce((s,t)=>s+parcelaEm(t,m),0),sh=who?it.reduce((s,t)=>{const d=t.div||{},z=Object.values(d).reduce((a,b)=>a+b,0)||1;return s+parcelaEm(t,m)*(d[who]||0)/z},0):0;
 $('dT').textContent=tt+' · '+mname(m);$('dS').innerHTML=`<b>${brl(tot)}</b> em ${it.length} compra${it.length==1?'':'s'}`+(who?` · parte de ${esc(who)}: <b>${brl(sh)}</b>`:'');
 const kv=(k,v)=>v?`<div class="kv"><span>${k}</span><span>${v}</span></div>`:'';
 $('dL').innerHTML=it.map(t=>{const v=parcelaEm(t,m),j=m-fat(t)+t.atual,ds=Object.entries(t.div||{}).map(([p,x])=>esc(p)+' '+brl(x)).join(' · ');
-return `<div class="dc" onclick="drillEdit('${t.id}')"><div class="dh"><b>${esc(t.nomeF||t.nomeO||t.cat||'—')}</b><b>${brl(v)}</b></div>`+kv('Nome original',esc(t.nomeO&&t.nomeO!=t.nomeF?t.nomeO:''))+kv('Data da compra',toBR(t.dc))+kv('Data do registro',toBR(t.dr))+kv('Categoria',esc((t.cat||'—')+(t.sub?' › '+t.sub:'')))+kv('Classificação',`<i class="dot" style="background:${t.classe=='Obrigatório'?'#5B9BD5':'#F7B6CE'};margin:0 6px 0 0"></i>${esc(t.classe||'')}`)+kv('Cartão',esc(t.cartao||'')+(fl(t)?' · fatura '+fl(t):''))+kv('App/site',esc(t.app||''))+kv('Responsáveis',esc(t.resp||''))+kv('Divisão da parcela',ds)+kv('Parcela',j+'/'+t.total)+kv('Valor da parcela',brl(t.valor))+kv('Valor total',brl(t.valor*t.total))+kv('Falta quitar',brl(Math.max(0,t.total-j)*t.valor))+kv('Observação',esc(t.obs||''))+'</div>'}).join('')||'<small>Nenhuma compra.</small>';
+return `<div class="dc" onclick="drillEdit('${t.id}')"><div class="dh"><b>${esc(t.nomeF||t.nomeO||t.cat||'—')}</b></div>`+kv('Valor da parcela',brl(t.valor))+kv('Parcela atual',j)+kv('Total de parcelas',t.total)+kv('Responsável',esc(t.resp||''))+'</div>'}).join('')||'<small>Nenhuma compra.</small>';
 $('dlgD').showModal()}
 function drillEdit(id){$('dlgD').close();openF(id)}
 const FB=new Set(),oB=(a,l)=>`<option value="">${l||'(não alterar)'}</option>`+a.map(x=>`<option>${esc(x)}</option>`).join('');
